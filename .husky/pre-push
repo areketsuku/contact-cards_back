@@ -1,0 +1,13 @@
+#!/bin/sh
+
+BRANCH_NAME=$(git branch --show-current)
+
+VALID_BRANCH_REGEX='^((feature|bugfix|hotfix)\/[a-z0-9-]+)$'
+
+if ! echo "$BRANCH_NAME" | grep -Eq "$VALID_BRANCH_REGEX"; then
+  echo "\n❌ PUSH REJECTED: Branch name '$BRANCH_NAME' is not valid. Use: feature/xxx | bugfix/xxx | hotfix/xxx\n"
+  exit 1
+fi
+
+echo "✅ Branch name valid"
+exit 0

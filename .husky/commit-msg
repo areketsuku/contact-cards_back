@@ -1,0 +1,14 @@
+#!/bin/sh
+
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(sed '/^#/d' "$COMMIT_MSG_FILE")
+
+LENGTH=${#COMMIT_MSG}
+
+if [ "$LENGTH" -lt 10 ] || [ "$LENGTH" -gt 72 ]; then
+  echo "\n❌ COMMIT MESSAGE INVALID"
+  echo "Length must be between 10 and 72 characters"
+  exit 1
+fi
+
+exit 0

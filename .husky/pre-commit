@@ -1,4 +1,28 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+#!/bin/sh
 
-npm test
+echo "\nExecuting pre-commit hook...\n"
+
+FILES_PATTERN='\.(js|ts|jsx|tsx)$'
+
+# Verifica que NO hi hagi referencies a console
+if git diff --cached --name-only | \
+  grep -E "$FILES_PATTERN" | \
+  xargs grep -nE 'console\.(log|info|warn|error|dir|clear)' 2>/dev/null
+  #Si vols permetre comentaris | grep -v "//";
+then
+  echo "\n❌ COMMIT REJECTED: console.* found\n"
+  exit 1
+fi
+
+# Verifica que NO hi hagi referencies a debugger
+if git diff --cached --name-only | \
+  grep -E "$FILES_PATTERN" | \
+  xargs grep -n 'debugger' 2>/dev/null
+then
+  echo "\n❌ COMMIT REJECTED: debugger found\n"
+  exit 1
+fi
+
+echo "✅ Pre-commit checks passed\n"
+exit 0
+
