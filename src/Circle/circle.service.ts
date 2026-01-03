@@ -3,7 +3,7 @@ import { Circle } from "./circle.model";
 import { ICircle, IAllowedInfo } from "./circle.types";
 
 export class CircleService {
-  private circleModel = Circle;
+  private readonly circleModel = Circle;
 
   private async checkCircleAndOwner (circleId:string, ownerId:string): Promise<ICircle> {
     const circle = await this.circleModel.findById(circleId);
@@ -16,7 +16,6 @@ export class CircleService {
     return circle;
   }
 
-  constructor () {}
   //check
   async hasContact(circleId:string, ownerId: string, contactId:string):Promise<boolean> {
     const circle = await this.checkCircleAndOwner(circleId,ownerId);
