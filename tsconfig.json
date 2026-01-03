@@ -1,27 +1,36 @@
 {
   "compilerOptions": {
-    "types": ["node", "jest"],
+    "types": [
+      "node",
+      "jest"
+    ],
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "strict": true,
-    "jsx": "react-jsx",
-    "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
     "target": "ES2024",
-    "module": "EsNext",
-    "outDir":"./dist/",
+    "module": "ESNext",
+    "outDir": "./dist/",
     "rootDir": "./src",
     "esModuleInterop": true,
+    "moduleResolution": "Node",
     "forceConsistentCasingInFileNames": true,
     "noEmitOnError": true,
-    "lib": ["ES2024"]
-},
-"include": ["**/*.ts"],
-"exclude": ["node_modules", "dist"]
+    "lib": [
+      "ES2024"
+    ]
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

@@ -1107,6 +1107,13 @@
     "@types/ms" "*"
     "@types/node" "*"
 
+"@types/mongoose@^5.11.97":
+  version "5.11.97"
+  resolved "https://registry.yarnpkg.com/@types/mongoose/-/mongoose-5.11.97.tgz#80b0357f3de6807eb597262f52e49c3e13ee14d8"
+  integrity sha512-cqwOVYT3qXyLiGw7ueU2kX9noE8DPGRY6z8eUxudhXY8NZ7DMKYAxyZkLSevGfhCX3dO/AoX5/SO9lAzfjon0Q==
+  dependencies:
+    mongoose "*"
+
 "@types/ms@*":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@types/ms/-/ms-2.1.0.tgz#052aa67a48eccc4309d7f0191b7e41434b90bb78"
@@ -3657,7 +3664,7 @@ mongodb@~7.0:
     bson "^7.0.0"
     mongodb-connection-string-url "^7.0.0"
 
-mongoose@^9.0.2:
+mongoose@*, mongoose@^9.1.0:
   version "9.1.0"
   resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-9.1.0.tgz#805648b56d3149d26bacb0896e9745d54895f707"
   integrity sha512-RVCApwqD6q+O3rsnypmiL1K5+mkN5DwA7BO5a5ofCKh/EZB9FKvcQ4EiqHNmRye3cXhz5DmQ/aVyfBFkXnUbrg==
