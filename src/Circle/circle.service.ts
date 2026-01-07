@@ -7,7 +7,7 @@ export class CircleService {
 
   private async checkCircleAndOwner (circleId:string, ownerId:string): Promise<ICircle> {
     const circle = await this.circleModel.findById(circleId);
-    if(!circle) throw new Error ("Circle not found");
+    if(!circle) throw new Error ("Error: Circle not found");
 
     if(ownerId && circle.circleOwnerId.toString() !== ownerId) {
       throw new Error("Unauthorized: not the owner of the circle");
