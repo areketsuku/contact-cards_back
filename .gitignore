@@ -1,17 +1,13 @@
-# Logs
 *.log
 
-# Node modules
-node_modules/
+/coverage
 
-# Build / distribució
+node_modules/
 dist/
 build/
 
-# Fitxers d'entorn
 .env
 
-# Editor / OS
 .vscode/
 .idea/
 .DS_Store
