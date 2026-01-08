@@ -1,15 +1,17 @@
-import { CircleService } from './circle.service';
-import { Circle } from './circle.model';
+import { CircleService } from "./circle.service";
+import { Circle } from "./circle.model";
 
-jest.mock('./circle.model', () => ({
+jest.mock("./circle.model", () => ({
   Circle: {
+    create: jest.fn(),
+    findOne: jest.fn(),
     findById: jest.fn(),
     findByIdAndDelete: jest.fn()
   }
 }));
 
-jest.mock('mongoose', () => {
-  const original = jest.requireActual('mongoose');
+jest.mock("mongoose", () => {
+  const original = jest.requireActual("mongoose");
   return {
     ...original,
     Types: {
@@ -32,18 +34,11 @@ describe("Given a Circle domain entity", () => {
     service = new CircleService();
   })
 
-  const createMockCircle = (/*overrides = {}*/) => ({
-    circleOwnerId: {
-      toString: () => 'circleOwnerTest',
-    },
-    circleName: {
-      toString: () => 'circleNameTest',
-    },
-    circleContacts: [
-      {
-        toString: () => 'circleContactTest',
-      },
-    ],
+  const createMockCircle = (overrides: Partial<CircleService> = {}) => ({
+    circleOwnerId: ownerId,
+    circleType: "default",
+    circleName: "contacts",
+    circleContacts: ["circleContactTest"],
     circleAllowedInfo: {
       name: true,
       surname1: false,
@@ -53,16 +48,68 @@ describe("Given a Circle domain entity", () => {
       phone1: false,
       phone2: false,
       country: false,
-      adress: false,
+      address: false,
       link1: false,
       link2: false,
       avatar: false,
     },
     save: jest.fn().mockResolvedValue(true),
     findByIdAndDelete: jest.fn().mockResolvedValue(true),
+    ...overrides,
   });
 
-  describe("When any method called", () => {
+  describe("When called createDefaultCircle", () => {
+    it("Should return a default circle with Type 'default' and name 'contacts'", async () => {
+      (Circle.create as jest.Mock).mockImplementation((circleData) => ({
+        ...createMockCircle(),
+        ...circleData,
+      }));
+
+      const result = await service.createDefaultCircle(ownerId);
+
+      expect(result.circleType).toBe("default");
+      expect(result.circleName).toBe("contacts");
+    });
+  });
+
+  describe("When called createCustomCircle", () => {
+    it("Should return a circle with Type 'custom' and custom name", async () => {
+      (Circle.create as jest.Mock).mockImplementation((circleData) => ({
+        ...createMockCircle(),
+        ...circleData,
+      }));
+
+      const result = await service.createCustomCircle(ownerId, "esport");
+
+      expect(result.circleType).toBe("custom");
+      expect(result.circleName).toBe("esport");
+    });
+  });
+
+  describe("When called getDefaultCircle", () => {
+    it("Should return the default circle with type 'default', name 'contacts' and coinciding ownerID", async () => {
+      const mockCircle = createMockCircle();
+      (Circle.findOne as jest.Mock).mockResolvedValue(mockCircle);
+
+      const result = await service.getDefaultCircle(ownerId);
+
+      expect(Circle.findOne).toHaveBeenCalledWith({
+        circleOwnerId: ownerId,
+        circleType: "default",
+      });
+      expect(result).toBe(mockCircle);
+    });
+
+    it("Should return error if default circle does not exists", async () => {
+      (Circle.findOne as jest.Mock).mockResolvedValue(null);
+
+      await expect(service.getDefaultCircle(ownerId))
+        .rejects
+        .toThrow("Error: default circle does not exists");
+    });
+  });
+
+  describe("When called a method that operates with a circle", () => {
     it("Should return an error if circleId does not coincide", async () => {
       (Circle.findById as jest.Mock).mockResolvedValue(null);
 
@@ -154,7 +201,7 @@ describe("Given a Circle domain entity", () => {
         phone1: true,
         phone2: false,
         country: false,
-        adress: false,
+        address: false,
         link1: true,
         link2: false,
         avatar: true,
@@ -172,6 +219,8 @@ describe("Given a Circle domain entity", () => {
   describe("When called updateName", () => {
     it("Should update the circleName with the new name", async () => {
       const mockCircle = createMockCircle();
+      mockCircle.circleType = "custom";
+      mockCircle.circleName = "oldName";
       (Circle.findById as jest.Mock).mockResolvedValue(mockCircle);
 
       const newCircleName = "newCircleNameTest";
@@ -182,11 +231,21 @@ describe("Given a Circle domain entity", () => {
       expect(result.circleName).toBe(newCircleName);
       expect(mockCircle.save).toHaveBeenCalled();
     });
+
+    it("Should return an error if trying to rename default circle", async () => {
+      (Circle.findById as jest.Mock).mockResolvedValue(createMockCircle());
+
+      await expect(
+        service.updateName(circleId, ownerId, "newName")
+      ).rejects.toThrow("Error: can't rename default circle");
+    });
   });
 
   describe("When called deleteCircle", () => {
     it("Should delete the Circle", async () => {
       const mockCircle = createMockCircle();
+      mockCircle.circleType = "custom";
+      mockCircle.circleName = "oldName";
       (Circle.findById as jest.Mock).mockResolvedValue(mockCircle);
 
       const result = await service.deleteCircle(circleId, ownerId);
@@ -194,6 +253,14 @@ describe("Given a Circle domain entity", () => {
       expect(Circle.findById).toHaveBeenCalledWith(circleId);
       expect(Circle.findByIdAndDelete).toHaveBeenCalledWith(circleId);
       expect(result).toBe(undefined);
+    });
+
+    it("Should return an error if tring to delete default circle", async () => {
+      (Circle.findById as jest.Mock).mockResolvedValue(createMockCircle());
+
+      await expect(
+        service.deleteCircle(circleId, ownerId)
+      ).rejects.toThrow("Error: can't delete default circle");
     });
   });
 });
