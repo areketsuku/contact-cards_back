@@ -7,9 +7,8 @@ on:
   pull_request:
 
 concurrency:
-  group: "sonar-${{ github.ref }}"
+  group: 'sonar-${{ github.ref }}'
   cancel-in-progress: true
-
 
 jobs:
   sonarcloud:

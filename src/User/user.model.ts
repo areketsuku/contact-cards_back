@@ -1,6 +1,6 @@
-import { Schema, model } from "mongoose";
+import { Schema, model } from 'mongoose';
 import bcrypt from 'bcryptjs';
-import { IUser } from "./user.types";
+import { IUser } from './user.types';
 
 const UserSchema = new Schema<IUser>(
   {
@@ -80,11 +80,13 @@ const UserSchema = new Schema<IUser>(
 
 UserSchema.pre('save', async function (this: IUser) {
   if (!this.isModified('password')) return;
-    const salt = await bcrypt.genSalt(10);
-    this.userPassword = await bcrypt.hash(this.userPassword, salt);
+  const salt = await bcrypt.genSalt(10);
+  this.userPassword = await bcrypt.hash(this.userPassword, salt);
 });
 
-UserSchema.methods.userComparePassword = async function (candidatePassword: string): Promise<boolean> {
+UserSchema.methods.userComparePassword = async function (
+  candidatePassword: string
+): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.userPassword);
 };
 

@@ -1,20 +1,21 @@
-import { Schema, model } from "mongoose";
-import { IAllowedInfo, ICircle } from "./circle.types";
+import { Schema, model } from 'mongoose';
+import { IAllowedInfo, ICircle } from './circle.types';
 
-const CircleOwnerAllowedInfoSchema = new Schema<IAllowedInfo>({
-  name: { type: Boolean, default: true },
-  surname1: { type: Boolean, default: false },
-  surname2: { type: Boolean, default: false },
-  email1: { type: Boolean, default: false },
-  email2: { type: Boolean, default: false },
-  phone1: { type: Boolean, default: false },
-  phone2: { type: Boolean, default: false },
-  country: { type: Boolean, default: false },
-  address: { type: Boolean, default: false },
-  link1: { type: Boolean, default: false },
-  link2: { type: Boolean, default: false },
-  avatar: { type: Boolean, default: false },
-},
+const CircleOwnerAllowedInfoSchema = new Schema<IAllowedInfo>(
+  {
+    name: { type: Boolean, default: true },
+    surname1: { type: Boolean, default: false },
+    surname2: { type: Boolean, default: false },
+    email1: { type: Boolean, default: false },
+    email2: { type: Boolean, default: false },
+    phone1: { type: Boolean, default: false },
+    phone2: { type: Boolean, default: false },
+    country: { type: Boolean, default: false },
+    address: { type: Boolean, default: false },
+    link1: { type: Boolean, default: false },
+    link2: { type: Boolean, default: false },
+    avatar: { type: Boolean, default: false },
+  },
   { _id: false }
 );
 
@@ -22,14 +23,14 @@ const CircleSchema = new Schema<ICircle>(
   {
     circleOwnerId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
       index: true,
     },
     circleType: {
       type: String,
-      enum: ["default", "custom"],
-      default: "custom",
+      enum: ['default', 'custom'],
+      default: 'custom',
       required: true,
     },
     circleName: {
@@ -39,8 +40,8 @@ const CircleSchema = new Schema<ICircle>(
       validate: {
         validator(value: string) {
           const doc = this as ICircle;
-          if (doc.circleType === "default") {
-            return value === "contacts";
+          if (doc.circleType === 'default') {
+            return value === 'contacts';
           }
           return true;
         },
@@ -51,7 +52,7 @@ const CircleSchema = new Schema<ICircle>(
     circleContacts: [
       {
         type: Schema.Types.ObjectId,
-        ref: "User",
+        ref: 'User',
       },
     ],
 
@@ -63,14 +64,12 @@ const CircleSchema = new Schema<ICircle>(
   { timestamps: true }
 );
 
-
-
 CircleSchema.index(
   { circleOwnerId: 1, circleType: 1 },
   {
     unique: true,
-    partialFilterExpression: { circleType: "default" },
+    partialFilterExpression: { circleType: 'default' },
   }
 );
 
-export const Circle = model<ICircle>("Circle", CircleSchema);
+export const Circle = model<ICircle>('Circle', CircleSchema);

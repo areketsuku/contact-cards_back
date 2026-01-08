@@ -9,5 +9,5 @@ export default {
   roots: ['<rootDir>/src'],
   testMatch: ['**/?(*.)+(spec|test).[tj]s?(x)'],
   coverageDirectory: 'coverage',
-  coverageReporters: ['lcov', 'text']
+  coverageReporters: ['lcov', 'text'],
 };

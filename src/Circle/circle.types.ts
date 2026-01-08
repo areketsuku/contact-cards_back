@@ -1,6 +1,6 @@
-import { Document, Types } from "mongoose";
+import { Document, Types } from 'mongoose';
 
-export type CircleType = "default" | "custom";
+export type CircleType = 'default' | 'custom';
 
 export interface IAllowedInfo {
   name: boolean;
