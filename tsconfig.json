@@ -1,9 +1,6 @@
 {
   "compilerOptions": {
-    "types": [
-      "node",
-      "jest"
-    ],
+    "types": ["node", "jest"],
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
@@ -22,15 +19,8 @@
     "moduleResolution": "Node",
     "forceConsistentCasingInFileNames": true,
     "noEmitOnError": true,
-    "lib": [
-      "ES2024"
-    ]
+    "lib": ["ES2024"]
   },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }

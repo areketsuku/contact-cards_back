@@ -7,9 +7,8 @@ on:
   pull_request:
 
 concurrency:
-  group: "audit-${{ github.ref }}"
+  group: 'audit-${{ github.ref }}'
   cancel-in-progress: true
-
 
 jobs:
   audit:
