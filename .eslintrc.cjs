@@ -12,4 +12,7 @@ module.exports = {
   plugins: ['@typescript-eslint'],
   extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
   ignorePatterns: ['node_modules/', 'dist/', 'coverage/', '.github/'],
+  rules: {
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
+  }
 };

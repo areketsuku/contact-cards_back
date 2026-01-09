@@ -1,52 +1,42 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { JwtUserPayload } from "../types/jwt";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { JWT_SECRET } from "../config/env";
 
-const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
-
-function isJwtUserPayload(value: unknown): value is JwtUserPayload {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "userId" in value &&
-    typeof (value as Record<string, unknown>).userId === "string"
-  );
+interface TokenPayload extends JwtPayload {
+  userId: string;
 }
 
-export const jwtMiddleware = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
+/**
+ * Middleware per validar JWT i injectar req.userId
+ * @param secretOverride opcional, només per tests
+ */
+export const jwtMiddleware = (secretOverride?: string) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
 
-    if (!authHeader) {
-      return res.status(401).json({ error: "Missing Authorization header" });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Missing or invalid Authorization header" });
     }
 
-    const [scheme, token] = authHeader.split(" ");
-
-    if (scheme !== "Bearer" || !token) {
-      return res
-        .status(401)
-        .json({ error: "Malformed Authorization header" });
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ error: "Token not provided" });
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET);
+    try {
+      const secret = secretOverride || JWT_SECRET;
 
-    if (!isJwtUserPayload(decoded)) {
-      return res.status(401).json({ error: "Invalid token payload" });
+      const decoded = jwt.verify(token, secret) as TokenPayload;
+
+      if (!decoded.userId) {
+        return res.status(401).json({ error: "Invalid token payload" });
+      }
+
+      req.userId = decoded.userId;
+
+      next();
+    } catch (err) {
+      return res.status(401).json({ error: "Unauthorized: " + (err instanceof Error ? err.message : String(err)) });
     }
-
-    req.userId = decoded.userId;
-
-    next();
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      return res.status(401).json({ error: "Unauthorized: " + err.message });
-    }
-
-    return res.status(401).json({ error: "Unauthorized" });
-  }
+  };
 };

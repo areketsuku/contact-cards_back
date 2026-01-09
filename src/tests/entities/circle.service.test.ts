@@ -1,7 +1,7 @@
-import { CircleService } from "./circle.service";
-import { Circle } from "./circle.model";
+import { CircleService } from "../../entities/Circle/circle.service";
+import { Circle } from "../../entities/Circle/circle.model";
 
-jest.mock("./circle.model", () => ({
+jest.mock("../../entities/Circle/circle.model", () => ({
   Circle: {
     create: jest.fn(),
     findOne: jest.fn(),
