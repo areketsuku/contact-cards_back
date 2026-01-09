@@ -81,8 +81,8 @@ describe('Given a Handshake domain entity', () => {
     (Handshake.findByIdAndDelete as jest.Mock).mockResolvedValue(undefined);
   });
 
-  describe('createHandshake', () => {
-    it('should create a handshake with senderId and expiresAt', async () => {
+  describe('When called createHandshake', () => {
+    it('Should create a handshake with senderId and expiresAt', async () => {
       (Handshake.create as jest.Mock).mockImplementation((data) => ({
         ...createMockHandshake(),
         ...data,
@@ -95,8 +95,8 @@ describe('Given a Handshake domain entity', () => {
     });
   });
 
-  describe('acceptHandshake', () => {
-    it("should add sender and receiver to each other's default circle and delete handshake", async () => {
+  describe('When called acceptHandshake', () => {
+    it("Should add sender and receiver to each other's default circle and delete the handshake", async () => {
       await service.acceptHandshake(handshakeId, receiverId);
 
       expect(mockCircleService.getDefaultCircle).toHaveBeenCalledWith(senderId);
@@ -118,7 +118,7 @@ describe('Given a Handshake domain entity', () => {
       expect(Handshake.findByIdAndDelete).toHaveBeenCalledWith(handshakeId);
     });
 
-    it('should throw if handshake does not exist', async () => {
+    it('Should return error if handshake does not exist', async () => {
       (Handshake.findById as jest.Mock).mockResolvedValue(null);
       await expect(
         service.acceptHandshake(handshakeId, receiverId)
@@ -126,21 +126,21 @@ describe('Given a Handshake domain entity', () => {
     });
   });
 
-  describe('deleteHandshake', () => {
-    it('should delete handshake if senderId matches', async () => {
+  describe('When called deleteHandshake', () => {
+    it('Should delete handshake if senderId matches', async () => {
       await service.deleteHandshake(senderId, handshakeId);
 
       expect(Handshake.findById).toHaveBeenCalledWith(handshakeId);
       expect(Handshake.findByIdAndDelete).toHaveBeenCalledWith(handshakeId);
     });
 
-    it('should throw if senderId does not match', async () => {
+    it('Should return error if senderId does not match', async () => {
       await expect(
         service.deleteHandshake('wrongSenderId', handshakeId)
       ).rejects.toThrow('Error: not the owner of the handshake');
     });
 
-    it('should throw if handshake does not exist', async () => {
+    it('Sould return error if handshake does not exist', async () => {
       (Handshake.findById as jest.Mock).mockResolvedValue(null);
       await expect(
         service.deleteHandshake(senderId, handshakeId)
