@@ -1,8 +1,8 @@
-import { Circle } from "../Circle/circle.model";
-import { User } from "./user.model";
-import { UserService } from "./user.service";
+import { Circle } from "../../entities/Circle/circle.model";
+import { User } from "../../entities/User/user.model";
+import { UserService } from "../../entities/User/user.service";
 
-jest.mock("./user.model", () => ({
+jest.mock("../../entities/User/user.model", () => ({
   User: {
     create: jest.fn(),
     findById: jest.fn(),
@@ -11,7 +11,7 @@ jest.mock("./user.model", () => ({
   },
 }));
 
-jest.mock("../Circle/circle.model", () => ({
+jest.mock("../../entities/Circle/circle.model", () => ({
   Circle: {
     findOne: jest.fn(),
   },

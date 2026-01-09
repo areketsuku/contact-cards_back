@@ -1,13 +1,14 @@
-// src/middlewares/error.middleware.ts
 import { Request, Response, NextFunction } from "express";
-import { logger } from "../utils/logger";
+import { CustomError } from "../types/errors";
 
 export const errorMiddleware = (
-  err: unknown,
-  req: Request,
+  err: CustomError,
+  _req: Request,
   res: Response,
   _next: NextFunction
 ) => {
-  logger.error(err);
-  res.status(500).json({ error: "Internal server error" });
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Internal server error";
+
+  res.status(statusCode).json({ statusCode, message });
 };

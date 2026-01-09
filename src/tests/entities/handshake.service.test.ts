@@ -1,9 +1,9 @@
-import { HandshakeService } from './handshake.service';
-import { Handshake } from './handshake.model';
-import { CircleService } from '../Circle/circle.service';
-import { Types } from 'mongoose';
+import { HandshakeService } from "../../entities/Handshake/handshake.service";
+import { Handshake } from "../../entities/Handshake/handshake.model";
+import { CircleService } from "../../entities/Circle/circle.service";
+import { Types } from "mongoose";
 
-jest.mock('./handshake.model', () => ({
+jest.mock("../../entities/Handshake/handshake.model", () => ({
   Handshake: {
     create: jest.fn(),
     findById: jest.fn(),
@@ -11,8 +11,8 @@ jest.mock('./handshake.model', () => ({
   },
 }));
 
-jest.mock('mongoose', () => {
-  const original = jest.requireActual('mongoose');
+jest.mock("mongoose", () => {
+  const original = jest.requireActual("mongoose");
   return {
     ...original,
     Types: {
@@ -22,12 +22,12 @@ jest.mock('mongoose', () => {
   };
 });
 
-describe('Given a Handshake domain entity', () => {
+describe("Given a Handshake domain entity", () => {
   let service: HandshakeService;
 
-  const senderId = 'senderIdTest';
-  const receiverId = 'receiverIdTest';
-  const handshakeId = 'handshakeIdTest';
+  const senderId = "senderIdTest";
+  const receiverId = "receiverIdTest";
+  const handshakeId = "handshakeIdTest";
 
   const mockCircleService: Partial<CircleService> = {
     getDefaultCircle: jest.fn(),
@@ -81,8 +81,8 @@ describe('Given a Handshake domain entity', () => {
     (Handshake.findByIdAndDelete as jest.Mock).mockResolvedValue(undefined);
   });
 
-  describe('When called createHandshake', () => {
-    it('Should create a handshake with senderId and expiresAt', async () => {
+  describe("When called createHandshake", () => {
+    it("Should create a handshake with senderId and expiresAt", async () => {
       (Handshake.create as jest.Mock).mockImplementation((data) => ({
         ...createMockHandshake(),
         ...data,
@@ -95,7 +95,7 @@ describe('Given a Handshake domain entity', () => {
     });
   });
 
-  describe('When called acceptHandshake', () => {
+  describe("When called acceptHandshake", () => {
     it("Should add sender and receiver to each other's default circle and delete the handshake", async () => {
       await service.acceptHandshake(handshakeId, receiverId);
 
@@ -118,33 +118,33 @@ describe('Given a Handshake domain entity', () => {
       expect(Handshake.findByIdAndDelete).toHaveBeenCalledWith(handshakeId);
     });
 
-    it('Should return error if handshake does not exist', async () => {
+    it("Should return error if handshake does not exist", async () => {
       (Handshake.findById as jest.Mock).mockResolvedValue(null);
       await expect(
         service.acceptHandshake(handshakeId, receiverId)
-      ).rejects.toThrow('Error: Handshake expired or invalid');
+      ).rejects.toThrow("Error: Handshake expired or invalid");
     });
   });
 
-  describe('When called deleteHandshake', () => {
-    it('Should delete handshake if senderId matches', async () => {
+  describe("When called deleteHandshake", () => {
+    it("Should delete handshake if senderId matches", async () => {
       await service.deleteHandshake(senderId, handshakeId);
 
       expect(Handshake.findById).toHaveBeenCalledWith(handshakeId);
       expect(Handshake.findByIdAndDelete).toHaveBeenCalledWith(handshakeId);
     });
 
-    it('Should return error if senderId does not match', async () => {
+    it("Should return error if senderId does not match", async () => {
       await expect(
-        service.deleteHandshake('wrongSenderId', handshakeId)
-      ).rejects.toThrow('Error: not the owner of the handshake');
+        service.deleteHandshake("wrongSenderId", handshakeId)
+      ).rejects.toThrow("Error: not the owner of the handshake");
     });
 
-    it('Sould return error if handshake does not exist', async () => {
+    it("Sould return error if handshake does not exist", async () => {
       (Handshake.findById as jest.Mock).mockResolvedValue(null);
       await expect(
         service.deleteHandshake(senderId, handshakeId)
-      ).rejects.toThrow('Error: Handshake expired or invalid');
+      ).rejects.toThrow("Error: Handshake expired or invalid");
     });
   });
 });

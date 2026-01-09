@@ -9,6 +9,10 @@ app.use(cors());
 app.use(express.json());
 
 // Rutes (encara no hi ha controllers reals)
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
+});
+
 // Exemple placeholder:
 // app.use("/users", userRouter);
 
