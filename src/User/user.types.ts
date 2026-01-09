@@ -1,6 +1,6 @@
-import { Document } from 'mongoose';
+import { Document } from "mongoose";
 
-export interface IUser extends Document {
+export interface IUser {
   userName: string;
   userSurname1?: string;
   userSurname2?: string;
@@ -9,11 +9,14 @@ export interface IUser extends Document {
   userPhone1?: string;
   userPhone2?: string;
   userCountry?: string;
-  userAdress?: string;
+  userAddress?: string;
   userLink1?: string;
   userLink2?: string;
-  userPassword: string;
   userAvatar?: string;
-  userCreatedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+export interface IUserWithPassword extends IUser, Document {
+  userPassword: string;
   userComparePassword(candidatePassword: string): Promise<boolean>;
 }

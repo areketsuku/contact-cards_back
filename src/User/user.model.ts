@@ -1,93 +1,84 @@
 import { Schema, model } from 'mongoose';
 import bcrypt from 'bcryptjs';
-import { IUser } from './user.types';
+import { IUserWithPassword } from './user.types';
 
-const UserSchema = new Schema<IUser>(
+const UserSchema = new Schema<IUserWithPassword>(
   {
     userName: {
       type: String,
-      required: [true, 'El nom és obligtori'],
-      trim: true,
+      required: true,
+      trim: true
     },
     userSurname1: {
       type: String,
-      required: false,
-      trim: true,
+      trim: true
     },
     userSurname2: {
       type: String,
-      required: false,
-      trim: true,
+      trim: true
     },
     userEmail1: {
       type: String,
-      required: [true, 'Un email es obligtori'],
+      required: true,
       unique: true,
       lowercase: true,
       trim: true,
     },
     userEmail2: {
       type: String,
-      required: false,
       unique: true,
       lowercase: true,
       trim: true,
+      sparse: true,
     },
     userPhone1: {
       type: String,
-      required: false,
       unique: true,
-      trim: true,
+      sparse: true
     },
     userPhone2: {
       type: String,
-      required: false,
       unique: true,
-      trim: true,
+      sparse: true
     },
     userCountry: {
       type: String,
-      required: false,
-      trim: true,
+      trim: true
     },
-    userAdress: {
+    userAddress: {
       type: String,
-      required: false,
-      trim: true,
+      trim: true
     },
     userLink1: {
       type: String,
-      required: false,
-      trim: true,
+      trim: true
     },
     userLink2: {
       type: String,
-      required: false,
-      trim: true,
+      trim: true
     },
     userPassword: {
       type: String,
-      required: [true, 'La contrasenya és obligatòria'],
-      minlength: [6, 'La contrasenya ha de tenir almenys 6 caràcters'],
+      required: true,
+      minlength: 6,
+      select: false,
     },
     userAvatar: {
       type: String,
-      default: '',
+      default: ''
     },
   },
   { timestamps: true }
 );
 
-UserSchema.pre('save', async function (this: IUser) {
-  if (!this.isModified('password')) return;
+UserSchema.pre('save', async function () {
+  if (!this.isModified('userPassword')) return;
   const salt = await bcrypt.genSalt(10);
   this.userPassword = await bcrypt.hash(this.userPassword, salt);
 });
 
-UserSchema.methods.userComparePassword = async function (
-  candidatePassword: string
-): Promise<boolean> {
+UserSchema.methods.userComparePassword = function (candidatePassword: string) {
   return bcrypt.compare(candidatePassword, this.userPassword);
 };
 
-export const User = model<IUser>('User', UserSchema);
+export const User = model<IUserWithPassword>('User', UserSchema);

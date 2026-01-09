@@ -207,18 +207,18 @@ describe("Given a Circle domain entity", () => {
       (Circle.findById as jest.Mock).mockResolvedValue(mockCircle);
 
       const newAllowedInfo = {
-        name: true,
-        surname1: true,
-        surname2: false,
-        email1: true,
-        email2: false,
-        phone1: true,
-        phone2: false,
-        country: false,
-        address: false,
-        link1: true,
-        link2: false,
-        avatar: true,
+        userName: true,
+        userSurname1: true,
+        userSurname2: false,
+        userEmail1: true,
+        userEmail2: false,
+        userPhone1: true,
+        userPhone2: false,
+        userCountry: false,
+        userAddress: false,
+        userLink1: true,
+        userLink2: false,
+        userAvatar: true,
       };
 
       const result = await service.updateAllowedInfo(

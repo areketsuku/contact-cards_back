@@ -3,18 +3,18 @@ import { IAllowedInfo, ICircle } from './circle.types';
 
 const CircleOwnerAllowedInfoSchema = new Schema<IAllowedInfo>(
   {
-    name: { type: Boolean, default: true },
-    surname1: { type: Boolean, default: false },
-    surname2: { type: Boolean, default: false },
-    email1: { type: Boolean, default: false },
-    email2: { type: Boolean, default: false },
-    phone1: { type: Boolean, default: false },
-    phone2: { type: Boolean, default: false },
-    country: { type: Boolean, default: false },
-    address: { type: Boolean, default: false },
-    link1: { type: Boolean, default: false },
-    link2: { type: Boolean, default: false },
-    avatar: { type: Boolean, default: false },
+    userName: { type: Boolean, default: true },
+    userSurname1: { type: Boolean, default: false },
+    userSurname2: { type: Boolean, default: false },
+    userEmail1: { type: Boolean, default: false },
+    userEmail2: { type: Boolean, default: false },
+    userPhone1: { type: Boolean, default: false },
+    userPhone2: { type: Boolean, default: false },
+    userCountry: { type: Boolean, default: false },
+    userAddress: { type: Boolean, default: false },
+    userLink1: { type: Boolean, default: false },
+    userLink2: { type: Boolean, default: false },
+    userAvatar: { type: Boolean, default: false },
   },
   { _id: false }
 );

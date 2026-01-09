@@ -6,7 +6,7 @@ import { CircleService } from '../Circle/circle.service';
 export class HandshakeService {
   private readonly handshakeModel = Handshake;
 
-  constructor(private readonly circleService: CircleService) {}
+  constructor(private readonly circleService: CircleService) { }
 
   async createHandshake(senderId: string): Promise<IHandshake> {
     return this.handshakeModel.create({
@@ -15,10 +15,7 @@ export class HandshakeService {
     });
   }
 
-  async acceptHandshake(
-    handshakeId: string,
-    receiverId: string
-  ): Promise<void> {
+  async acceptHandshake(handshakeId: string, receiverId: string): Promise<void> {
     const handshake = await this.handshakeModel.findById(handshakeId);
     if (!handshake) {
       throw new Error('Error: Handshake expired or invalid');
@@ -26,19 +23,10 @@ export class HandshakeService {
 
     const senderId = handshake.senderId.toString();
     const senderCircle = await this.circleService.getDefaultCircle(senderId);
-    const receiverCircle =
-      await this.circleService.getDefaultCircle(receiverId);
+    const receiverCircle = await this.circleService.getDefaultCircle(receiverId);
 
-    await this.circleService.addContact(
-      senderCircle._id.toString(),
-      senderId,
-      receiverId
-    );
-    await this.circleService.addContact(
-      receiverCircle._id.toString(),
-      receiverId,
-      senderId
-    );
+    await this.circleService.addContact(senderCircle._id.toString(), senderId, receiverId);
+    await this.circleService.addContact(receiverCircle._id.toString(), receiverId, senderId);
 
     await this.handshakeModel.findByIdAndDelete(handshakeId);
   }
@@ -46,12 +34,8 @@ export class HandshakeService {
   async deleteHandshake(senderId: string, handshakeId: string): Promise<void> {
     const handshake = await this.handshakeModel.findById(handshakeId);
 
-    if (!handshake) {
-      throw new Error('Error: Handshake expired or invalid');
-    }
-    if (handshake.senderId.toString() !== senderId) {
-      throw new Error('Error: not the owner of the handshake');
-    }
+    if (!handshake) { throw new Error('Error: Handshake expired or invalid') }
+    if (handshake.senderId.toString() !== senderId) { throw new Error('Error: not the owner of the handshake') }
 
     await this.handshakeModel.findByIdAndDelete(handshakeId);
   }
