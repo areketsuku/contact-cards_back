@@ -2,21 +2,17 @@ import pino from "pino";
 
 const isDev = process.env.NODE_ENV !== "production";
 
-let loggerOptions: pino.LoggerOptions = {
-  level: isDev ? "debug" : "info",
-};
-
-if (isDev) {
-  loggerOptions = {
-    ...loggerOptions,
-    transport: {
+const devTransport = isDev
+  ? {
       target: "pino-pretty",
       options: {
         colorize: true,
-        translateTime: "SYS:yyyy-mm-dd HH:MM:ss",
+        translateTime: "SYS:dd-mm-yy HH:MM:ss",
       },
-    },
-  };
-}
+    }
+  : undefined;
 
-export const logger = pino(loggerOptions);
+export const logger = pino({
+  level: isDev ? "debug" : "info",
+  ...(devTransport && { transport: devTransport }),
+});

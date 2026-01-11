@@ -1,57 +1,81 @@
 import express, { Request, Response } from "express";
 import supertest from "supertest";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { jwtMiddleware } from "../../middlewares/jwt.middleware";
+import { JWT_SECRET } from "../../config/env";
 
-const TEST_JWT_SECRET = "testsecret"; // secret de test
+interface AuthRequest extends Request {
+  user?: string | JwtPayload;
+}
 
 describe("Given the JWT middleware", () => {
   let app: express.Express;
 
-  beforeAll(() => {
+  beforeEach(() => {
     app = express();
 
-    // Passar el secret de test al middleware
-    app.get("/protected", jwtMiddleware(TEST_JWT_SECRET), (req: Request, res: Response) => {
-      res.status(200).json({ userId: req.userId });
+    // Ruta de prova protegida pel middleware
+    app.get("/protected", jwtMiddleware, (req: AuthRequest, res: Response) => {
+      res.status(200).json({ message: "Access granted" });
     });
   });
 
-  it("should set req.userId and call next when Authorization header is valid", async () => {
-    const token = jwt.sign({ userId: "12345" }, TEST_JWT_SECRET);
+  describe("When the Authorization header is missing", () => {
+    it("should respond with 401", async () => {
+      const response = await supertest(app).get("/protected");
 
-    const response = await supertest(app)
-      .get("/protected")
-      .set("Authorization", `Bearer ${token}`);
-
-    expect(response.status).toBe(200);
-    expect(response.body.userId).toBe("12345");
+      expect(response.status).toBe(401);
+      expect(response.body).toEqual({ message: "Authorization header missing" });
+    });
   });
 
-  it("should return 401 if Authorization header is missing", async () => {
-    const response = await supertest(app).get("/protected");
-    expect(response.status).toBe(401);
-    expect(response.body).toEqual({ error: "Missing or invalid Authorization header" });
-    expect(response.body.error).toBe("Missing or invalid Authorization header");
+  describe("When the token is missing", () => {
+    it("should respond with 401", async () => {
+      const response = await supertest(app)
+        .get("/protected")
+        .set("Authorization", "Bearer ");
+
+      expect(response.status).toBe(401);
+      expect(response.body).toEqual({ message: "Token missing" });
+    });
   });
 
-  it("should return 401 if token is invalid", async () => {
-    const response = await supertest(app)
-      .get("/protected")
-      .set("Authorization", "Bearer invalidtoken");
+  describe("When the token is invalid", () => {
+    it("should respond with 403", async () => {
+      const response = await supertest(app)
+        .get("/protected")
+        .set("Authorization", "Bearer invalid-token");
 
-    expect(response.status).toBe(401);
-    expect(response.body).toEqual({ error: "Unauthorized: jwt malformed" });
+      expect(response.status).toBe(403);
+      expect(response.body).toEqual({ message: "Invalid token" });
+    });
   });
 
-  it("should return 401 if token payload is invalid", async () => {
-    const invalidToken = jwt.sign({ foo: "bar" }, TEST_JWT_SECRET);
-    const response = await supertest(app)
-      .get("/protected")
-      .set("Authorization", `Bearer ${invalidToken}`);
+  describe("When the token is valid", () => {
+    it("should call next and attach decoded token to req.user", async () => {
+      const payload = { userId: "123" };
+      const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
 
-    expect(response.status).toBe(401);
-    expect(response.body.error).toBe("Invalid token payload");
+      // Captura segura sense usar `any`
+      let capturedUser: string | JwtPayload | undefined = undefined;
+
+      const appWithCapture = express();
+      appWithCapture.get(
+        "/protected",
+        jwtMiddleware,
+        (req: AuthRequest, res: Response) => {
+          capturedUser = req.user;
+          res.status(200).json({ message: "Access granted" });
+        }
+      );
+
+      const response = await supertest(appWithCapture)
+        .get("/protected")
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ message: "Access granted" });
+      expect(capturedUser).toMatchObject(payload);
+    });
   });
-
 });

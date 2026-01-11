@@ -1,27 +1,78 @@
-import { logger } from "../../utils/logger";
+// src/tests/utils/logger.test.ts
+import { jest } from "@jest/globals";
 
-describe("Given the logger utility", () => {
+// Mock del logger
+const mockLogger = {
+  info: jest.fn(),
+  error: jest.fn(),
+};
+const mockPino = jest.fn(() => mockLogger);
+jest.mock("pino", () => mockPino);
+
+describe("Given the logger.ts module", () => {
+  let originalEnv: NodeJS.ProcessEnv;
+
+  beforeAll(() => {
+    originalEnv = { ...process.env };
+  });
+
+  afterAll(() => {
+    process.env = originalEnv;
+  });
+
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetModules();
+    mockPino.mockClear();
+    mockLogger.info.mockClear();
+    mockLogger.error.mockClear();
   });
 
-  it("should call info with the correct message", () => {
-    const spyInfo = jest.spyOn(logger, "info");
-    logger.info("Test info message");
+  describe("When NODE_ENV is development", () => {
+    beforeEach(() => {
+      process.env.NODE_ENV = "development";
+    });
 
-    expect(spyInfo).toHaveBeenCalledWith("Test info message");
+    it("should use debug level and pino-pretty transport", () => {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { logger } = require("../../utils/logger");
+
+      expect(mockPino).toHaveBeenCalledWith(
+        expect.objectContaining({
+          level: "debug",
+          transport: expect.objectContaining({
+            target: "pino-pretty",
+            options: expect.objectContaining({
+              colorize: true,
+              translateTime: "SYS:dd-mm-yy HH:MM:ss",
+            }),
+          }),
+        })
+      );
+
+      expect(logger).toBeDefined();
+      expect(logger.info).toBeDefined();
+      expect(logger.error).toBeDefined();
+    });
   });
 
-  it("should call error with the correct message", () => {
-    const spyError = jest.spyOn(logger, "error");
-    logger.error("Test error message");
+  describe("When NODE_ENV is production", () => {
+    beforeEach(() => {
+      process.env.NODE_ENV = "production";
+    });
 
-    expect(spyError).toHaveBeenCalledWith("Test error message");
-  });
+    it("should use info level and no transport", () => {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { logger } = require("../../utils/logger");
 
-  it("should be callable for info and error", () => {
-    logger.info("test info");
-    logger.error("test error");
-    expect(true).toBe(true); // només assegurar execució
+      expect(mockPino).toHaveBeenCalledWith(
+        expect.objectContaining({
+          level: "info",
+        })
+      );
+
+      expect(logger).toBeDefined();
+      expect(logger.info).toBeDefined();
+      expect(logger.error).toBeDefined();
+    });
   });
 });

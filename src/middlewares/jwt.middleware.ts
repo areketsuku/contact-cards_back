@@ -2,41 +2,32 @@ import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { JWT_SECRET } from "../config/env";
 
-interface TokenPayload extends JwtPayload {
-  userId: string;
+interface AuthRequest extends Request {
+  user?: string | JwtPayload;
 }
 
-/**
- * Middleware per validar JWT i injectar req.userId
- * @param secretOverride opcional, només per tests
- */
-export const jwtMiddleware = (secretOverride?: string) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const authHeader = req.headers.authorization;
+export const jwtMiddleware = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "Missing or invalid Authorization header" });
-    }
+  if (!authHeader) {
+    return res.status(401).json({ message: "Authorization header missing" });
+  }
 
-    const token = authHeader.split(" ")[1];
-    if (!token) {
-      return res.status(401).json({ error: "Token not provided" });
-    }
+  const token = authHeader.split(" ")[1];
 
-    try {
-      const secret = secretOverride || JWT_SECRET;
+  if (!token) {
+    return res.status(401).json({ message: "Token missing" });
+  }
 
-      const decoded = jwt.verify(token, secret) as TokenPayload;
-
-      if (!decoded.userId) {
-        return res.status(401).json({ error: "Invalid token payload" });
-      }
-
-      req.userId = decoded.userId;
-
-      next();
-    } catch (err) {
-      return res.status(401).json({ error: "Unauthorized: " + (err instanceof Error ? err.message : String(err)) });
-    }
-  };
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(403).json({ message: "Invalid token" });
+  }
 };

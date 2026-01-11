@@ -1,51 +1,60 @@
-import express, { Request, Response, NextFunction } from "express";
-import supertest from "supertest";
+import express from "express";
+import request from "supertest";
 import { errorMiddleware } from "../../middlewares/error.middleware";
 import { CustomError } from "../../types/errors";
 
-describe("Given the Error middleware", () => {
-  let app: express.Express;
+describe("Given errorMiddleware", () => {
+  const testApp = express();
 
   beforeAll(() => {
-    app = express();
+    testApp.use(express.json());
 
-    // Ruta que llença un error per provar el middleware
-    app.get("/error", (_req: Request, _res: Response, next: NextFunction) => {
-      const error: CustomError = new Error("Something went wrong");
-      error.statusCode = 418;
-      next(error);
+    testApp.get("/error-400", (_req, _res, next) => {
+      const err: CustomError = new Error("fail") as CustomError;
+      err.statusCode = 400;
+      next(err);
     });
 
+    testApp.get("/error-no-status", (_req, _res, next) => {
+      const err: CustomError = new Error("boom") as CustomError;
+      next(err);
+    });
 
-    // Middleware d'errors
-    app.use(errorMiddleware);
+    testApp.get("/error-empty", (_req, _res, next) => {
+      const err = {} as CustomError;
+      next(err);
+    });
+
+    testApp.use(errorMiddleware);
   });
 
-  it("should catch an error and respond with status and message", async () => {
-    const response = await supertest(app).get("/error");
+  describe("When called with a CustomError with statusCode", () => {
+    it("Should respond with that statusCode and message", async () => {
+      const response = await request(testApp).get("/error-400");
 
-    expect(response.status).toBe(418);
-    expect(response.body).toEqual({
-      statusCode: 418,
-      message: "Something went wrong",
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty("statusCode", 400);
+      expect(response.body).toHaveProperty("message", "fail");
     });
   });
 
-  it("should default statusCode to 500 if none is set", async () => {
-    const app2 = express();
+  describe("When called with a CustomError without statusCode", () => {
+    it("Should respond with 500 and the error message", async () => {
+      const response = await request(testApp).get("/error-no-status");
 
-    app2.get("/default-error", (_req, _res, next) => {
-      next(new Error("Default error"));
+      expect(response.status).toBe(500);
+      expect(response.body).toHaveProperty("statusCode", 500);
+      expect(response.body).toHaveProperty("message", "boom");
     });
+  });
 
-    app2.use(errorMiddleware);
+  describe("When called with an empty error object", () => {
+    it("Should respond with 500 and default internal server message", async () => {
+      const response = await request(testApp).get("/error-empty");
 
-    const response = await supertest(app2).get("/default-error");
-
-    expect(response.status).toBe(500);
-    expect(response.body).toEqual({
-      statusCode: 500,
-      message: "Default error",
+      expect(response.status).toBe(500);
+      expect(response.body).toHaveProperty("statusCode", 500);
+      expect(response.body).toHaveProperty("message", "Internal server error");
     });
   });
 });

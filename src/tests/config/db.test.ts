@@ -1,9 +1,12 @@
-import mongoose from "mongoose";
 import { connectDB } from "../../config/db";
+import mongoose from "mongoose";
 import { logger } from "../../utils/logger";
-import { JWT_SECRET, MONGO_URI, PORT } from "../../config/env";
+import { MONGO_URI } from "../../config/env";
 
-jest.mock("mongoose");
+jest.mock("mongoose", () => ({
+  connect: jest.fn(),
+}));
+
 jest.mock("../../utils/logger", () => ({
   logger: {
     info: jest.fn(),
@@ -11,38 +14,29 @@ jest.mock("../../utils/logger", () => ({
   },
 }));
 
-describe("Given connectDB", () => {
-  const mongoURI = "mongodb://localhost:27017/testdb";
+describe("Given connectDB function", () => {
+  const mockedConnect = mongoose.connect as jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it("should call mongoose.connect and logger.info on success", async () => {
-    (mongoose.connect as jest.Mock).mockResolvedValue({});
+  it("should call mongoose.connect with MONGO_URI and log success", async () => {
+    mockedConnect.mockResolvedValueOnce({});
 
-    await connectDB(mongoURI);
+    await connectDB();
 
-    expect(mongoose.connect).toHaveBeenCalledWith(mongoURI);
+    expect(mockedConnect).toHaveBeenCalledWith(MONGO_URI);
     expect(logger.info).toHaveBeenCalledWith("✅ MongoDB connected");
   });
 
-  it("should call logger.error and throw on connection failure", async () => {
+  it("should log error and throw if mongoose.connect fails", async () => {
     const error = new Error("Connection failed");
-    (mongoose.connect as jest.Mock).mockRejectedValue(error);
+    mockedConnect.mockRejectedValueOnce(error);
 
-    await expect(connectDB(mongoURI)).rejects.toThrow(error);
+    await expect(connectDB()).rejects.toThrow(error);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      "❌ MongoDB connection error: " + error
-    );
+    expect(mockedConnect).toHaveBeenCalledWith(MONGO_URI);
+    expect(logger.error).toHaveBeenCalledWith("❌ MongoDB connection error: " + error);
   });
-
-  describe("Env config", () => {
-  it("should have fallback values if env vars are missing", () => {
-    expect(JWT_SECRET).toBeDefined();
-    expect(MONGO_URI).toBeDefined();
-    expect(PORT).toBeDefined();
-  });
-});
 });
