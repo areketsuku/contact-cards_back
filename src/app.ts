@@ -1,5 +1,5 @@
 import express from "express";
-import cors from "cors";
+import cors, { CorsOptions } from "cors";
 import { errorMiddleware } from "./middlewares/error.middleware";
 
 const app = express();
@@ -7,11 +7,22 @@ app.disable("x-powered-by");
 
 app.use(express.json());
 
+const devOrigins = ["http://localhost:5173"];
+
+const corsOptions: CorsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || devOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+};
+
 if (process.env.NODE_ENV === "development") {
-  app.use(cors());
+  app.use(cors(corsOptions));
 } else {
-  const allowedOrigins = ["https://midomini.com"];
-  app.use(cors({ origin: allowedOrigins }));
+  app.use(cors({ origin: ["https://midomini.com"] }));
 }
 
 app.get("/health", (req, res) => {

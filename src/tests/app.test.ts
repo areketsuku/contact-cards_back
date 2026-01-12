@@ -24,15 +24,25 @@ describe("Given express app", () => {
       process.env = originalEnv;
     });
 
-    it("Should allow all origins in development", async () => {
+    it("Should allow configured origins in development", async () => {
       process.env.NODE_ENV = "development";
       jest.resetModules();
 
       const devApp = (await import("../app")).default;
+      const origin = "http://localhost:5173";
+      const response = await request(devApp).get("/health").set("Origin", origin);
 
-      const response = await request(devApp).get("/health").set("Origin", "http://example.com");
+      expect(response.headers["access-control-allow-origin"]).toBe(origin);
+    });
 
-      expect(response.headers["access-control-allow-origin"]).toBe("*");
+    it("Should block non-allowed origins in development", async () => {
+      process.env.NODE_ENV = "development";
+      jest.resetModules();
+
+      const devApp = (await import("../app")).default;
+      const response = await request(devApp).get("/health").set("Origin", "http://evil.com");
+
+      expect(response.headers["access-control-allow-origin"]).toBeUndefined();
     });
 
     it("Should restrict origins in production", async () => {
